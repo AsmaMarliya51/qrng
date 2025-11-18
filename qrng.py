@@ -1,36 +1,19 @@
-"""
-Quantum Random Number Generator Using Bell States
-"""
-
-#Importing necessary libraries
-from qiskit import QuantumCircuit, transpile
+from qiskit import QuantumCircuit                      #Importing necessary libraries
 from qiskit_aer import AerSimulator
+import random
 
 sim = AerSimulator()
-random_bits = ""
 
-for _ in range(50):
-    #Creating 2-qubit quantum circuit
-    qc1 = QuantumCircuit(2,2)
+def quant_random_int(n_qubits=4):                            #Defining a function to generate random integers
+    qc = QuantumCircuit(n_qubits)                               #Creating a quantum circuit
+    qc.h(range(n_qubits))                                           #Applying all the qubits in superposition
+    qc.measure_all()                                                     #Measuring all the qubits
+    num = sim.run(qc)                                                           #Send the circuit to AerSimulator
+    result = num.result()                                                           #Wait for the result
+    count = result.get_counts()                                                          #Get the measurements                
+    bitstring = list(count.keys())[0]                                      #Extract the bitstring(as bits)
+    print("The generated and extracted 4-bit: ",bitstring)
+    return int(bitstring,2)                                              #Convert the bitstring(binary) into integer
 
-    #Creating Bell state
-    qc1.h(0)
-    qc1.cx(0,1)
-
-    #Measuring both qubits
-    qc1.measure([0,1],[0,1])
-    
-    #Execute the simulator
-    result = sim.run(qc1, shots=1).result()
-
-    #Read the output either '00' or '11'
-    bits = list(result.get_counts().keys())[0]
-
-    #Convert to classical bit
-    if bits == "00":
-        random_bits += "0"
-    else:
-        random_bits += "1"
-        
-print(len(random_bits))    
-print(list(random_bits))
+for _ in range(10):                                                  #Call the function 10 times and print 10 quantum generated random integers
+    print("The random number generated : ",quant_random_int())
